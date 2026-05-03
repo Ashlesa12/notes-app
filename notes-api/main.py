@@ -1,7 +1,8 @@
+from pymongo import MongoClient
+from bson import ObjectId
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-import json
 
 app = FastAPI()
 
@@ -18,23 +19,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-notes = []
-
-# 🔹 Load notes from file when server starts
-def load_notes():
-    global notes
-    try:
-        with open("notes.json", "r") as f:
-            notes = json.load(f)
-    except:
-        notes = []
-
-# 🔹 Save notes to file
-def save_notes():
-    with open("notes.json", "w") as f:
-        json.dump(notes, f)
-
-load_notes()
+# ✅ MongoDB setup
+client = MongoClient("mongodb://localhost:27017/")
+db = client["notes_db"]
+notes_collection = db["notes"]
 
 class Note(BaseModel):
     title: str
@@ -44,26 +32,43 @@ class Note(BaseModel):
 def home():
     return {"message": "Notes API running"}
 
+# ✅ GET all notes
 @app.get("/notes")
 def get_notes():
+    notes = list(notes_collection.find())
+
+    for note in notes:
+        note["_id"] = str(note["_id"])  # convert ObjectId → string
+
     return notes
 
+# ✅ CREATE note
 @app.post("/notes")
 def create_note(note: Note):
-    notes.append(note.dict())   # convert to dict for JSON saving
-    save_notes()
-    return {"message": "Note added", "note": note}
+    result = notes_collection.insert_one(note.dict())
 
+    return {
+        "message": "Note added",
+        "id": str(result.inserted_id)
+    }
+
+# ✅ GET single note
 @app.get("/notes/{note_id}")
-def get_note(note_id: int):
-    if note_id < len(notes):
-        return notes[note_id]
+def get_note(note_id: str):
+    note = notes_collection.find_one({"_id": ObjectId(note_id)})
+
+    if note:
+        note["_id"] = str(note["_id"])
+        return note
+
     return {"error": "Note not found"}
 
+# ✅ DELETE note
 @app.delete("/notes/{note_id}")
-def delete_note(note_id: int):
-    if note_id < len(notes):
-        deleted = notes.pop(note_id)
-        save_notes()
-        return {"message": "Deleted", "note": deleted}
+def delete_note(note_id: str):
+    result = notes_collection.delete_one({"_id": ObjectId(note_id)})
+
+    if result.deleted_count == 1:
+        return {"message": "Deleted"}
+
     return {"error": "Note not found"}

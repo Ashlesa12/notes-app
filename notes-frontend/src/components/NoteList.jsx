@@ -17,21 +17,22 @@ export default function NoteList({ notes, onDelete }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
-      {notes.map((note, index) => (
-        <div 
-          key={note.id || index} 
-          className="group relative bg-powder-blue dark:bg-slate-800 p-6 border-4 border-navy dark:border-powder-blue shadow-[6px_6px_0_rgba(48,80,102,1)] dark:shadow-[6px_6px_0_rgba(166,193,226,1)] hover:shadow-[10px_10px_0_rgba(48,80,102,1)] dark:hover:shadow-[10px_10px_0_rgba(166,193,226,1)] hover:-translate-y-1 hover:-translate-x-1 transition-all duration-200"
-        >
-          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-             {/* Delete button skeleton placeholder. Hook it up to API when ready */}
-            <button 
-  onClick={() => onDelete(index)}
-  className="p-2 text-navy/60 hover:text-white hover:bg-navy dark:hover:bg-red-500/10 rounded-none border-2 border-transparent hover:border-navy transition-colors"
-  aria-label="Delete note"
->
-  <Trash2 className="w-5 h-5 stroke-[2.5]" />
-</button>
-          </div>
+     {notes.map((note) => (
+  <div 
+    key={note._id}
+    className="group relative bg-powder-blue dark:bg-slate-800 p-6 border-4 border-navy dark:border-powder-blue shadow-[8px_8px_0_rgba(48,80,102,1)] dark:shadow-[8px_8px_0_rgba(166,193,226,1)] rounded-none transition-all hover:-translate-y-1 hover:shadow-[12px_12px_0_rgba(48,80,102,1)] dark:hover:shadow-[12px_12px_0_rgba(166,193,226,1)]"
+  >
+    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+      
+      <button 
+        onClick={() => onDelete(note._id)}   // ✅ already correct
+        className="p-2 text-navy/60 hover:text-white hover:bg-navy dark:hover:bg-red-500/10 rounded-none border-2 border-transparent hover:border-navy transition-colors"
+        aria-label="Delete note"
+      >
+        <Trash2 className="w-5 h-5 stroke-[2.5]" />
+      </button>
+
+    </div>
 
           <h2 className="font-extrabold text-xl mb-3 text-navy dark:text-white pr-8 border-b-2 border-navy/20 pb-2">
             {note.title}

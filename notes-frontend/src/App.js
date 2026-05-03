@@ -41,9 +41,22 @@ export default function App() {
   }, []);
 
   // Add note (optimistic UI)
-  const handleAdd = (note) => {
-    setNotes([note, ...notes]);
-  };
+const handleAdd = async (note) => {
+  try {
+    const res = await fetch(`${API_BASE}/notes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(note),
+    });
+
+    // 🔥 Instead of trusting local state → fetch from backend
+    fetchNotes();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   // 🔥 FIXED DELETE FUNCTION
   const handleDelete = async (id) => {
